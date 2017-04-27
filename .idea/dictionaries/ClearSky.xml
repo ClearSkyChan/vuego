@@ -2,7 +2,9 @@
   <dictionary name="ClearSky">
     <words>
       <w>cobt</w>
+      <w>contextmenu</w>
       <w>dblclick</w>
+      <w>rightclick</w>
       <w>tobt</w>
       <w>vuex</w>
     </words>

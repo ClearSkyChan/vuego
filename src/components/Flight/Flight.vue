@@ -2,13 +2,16 @@
   <div class="flight-wrapper">
     <input type="date"/>
     <button v-on:click="getFlights">查询</button>
-    <flight-grid v-bind:columns=columns
+    <flight-grid ref="flightGrid"
+                 v-bind:columns=columns
                  v-bind:items=flights
                  v-bind:size=size
-                 v-on:select="onSelect">
+                 v-on:select="onSelect"
+                 v-on:contextmenu="onContextMenu">
 
     </flight-grid>
-    <context-menu v-if="ctxMenus&&ctxMenus.length>0"
+    <context-menu ref="contextMenu"
+                  v-if="ctxMenus&&ctxMenus.length>0"
                   v-bind:items=ctxMenus></context-menu>
   </div>
 </template>
@@ -16,7 +19,8 @@
 <script>
   import Grid from '@/components/Flight/Grid'
   import ContextMenu from '@/components/Flight/ContextMenu'
-  import plug1 from '@/components/Flight/Plugins/plug1.js'
+  import plug1 from '@/components/Flight/Plugins/dblclickPlug'
+  import plug2 from '@/components/Flight/Plugins/contextMenuPlug'
 
   export default{
     data () {
@@ -43,7 +47,13 @@
           {field: 'Cobt', text: 'COBT', width: 100}
         ],
         ctxMenus: [{
-          name: '右键菜单1', handler: function () { console.log() }
+          name: '右键菜单1',
+          handler: function (model) {
+            console.log('you clicked menu 1', model)
+            model.FlightNo = 'xxxx'
+          }
+        }, {
+          name: '右键菜单2', handler: function () { console.log('you clicked menu 2') }
         }],
         flights: []
       }
@@ -75,14 +85,40 @@
       },
       onSelect: function (e) {
         this.$emit('select', e)
+      },
+      onContextMenu: function (e) {
+        var x = e[2].clientX
+        var y = e[2].clientY
+        this.$refs.contextMenu.show(x, y, e[0])
+      },
+      // 适配FOC
+      on: function (event, handler) {
+        var eventMe = ''
+        switch (event) {
+          case 'celldblclick':
+            eventMe = 'dblclick'
+            break
+          default:
+            throw new Error('bad event')
+        }
+        console.log(eventMe)
+        this.$refs.flightGrid.$on(eventMe, function (e) {
+          handler.call(this, e[1], e[0])
+        })
+      },
+      addContextMenuItem: function (name, handler) {
+        console.log('----------')
+        this.ctxMenus.push({
+          name: name,
+          handler: function (item) {
+            handler.call(this, {data: item})
+          }
+        })
       }
     },
     components: {
       'flight-grid': Grid,
       'context-menu': ContextMenu
-    },
-    created: function () {
-      plug1.start(this)
     },
     beforeMount: function () {
       var that = this
@@ -94,10 +130,8 @@
       window.addEventListener('resize', resize)
     },
     mounted: function () {
-      // this.getFlights()
-    },
-    destroyed: function () {
-      plug1.destory(this)
+      plug1.create(this)
+      plug2.create(this)
     }
   }
 
@@ -105,6 +139,6 @@
 
 <style scoped>
   .flight-wrapper{
-    font-size:12px;
+    font-size:14px;
   }
 </style>

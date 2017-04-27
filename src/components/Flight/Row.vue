@@ -1,50 +1,37 @@
-<template>
-  <tr v-bind:class="cssClass">
+<template xmlns:v-bind="http://www.w3.org/1999/xhtml">
+  <tr v-bind:class=cssClass>
     <td>{{index}}</td>
-    <td v-for="(c,i) in cells"
-        v-on:click="cellEventHandler('click',$event)"
-        v-on:dblclick="cellEventHandler('dblclick',$event)"
-        v-bind:data-row-index="index"
-        v-bind:data-col-index="i"
-        v-bind:data-col="c.col.field"
-        v-bind:style="c.col.style||''">{{c.content}}
+    <td v-for="c in columns" v-if="!c.hidden"
+        v-on:click="eventHandler('click',$event,c.field)"
+        v-on:dblclick="eventHandler('dblclick',$event,c.field)"
+        v-on:contextmenu="eventHandler('contextmenu',$event,c.field)"
+        v-bind:data-col="c.field"
+        v-bind:style="c.style||''">{{item[c.field]}}
     </td>
   </tr>
 </template>
 <script>
   export default {
-    props: ['columns', 'item', 'index', 'select'],
+    props: ['columns', 'index', 'item', 'select', 'alt'],
     computed: {
-      cells: function () {
-        var item = this.item
-        var results = []
-        this.columns.forEach((col) => {
-          if (col.hidden !== true) {
-            results.push({
-              col,
-              content: item[col.field]
-            })
-          }
-        })
-        return results
-      },
       cssClass: function () {
-        var style = ''
-        if (this.index % 2 !== 0) {
+        var style = ' '
+        if (this.alt) {
           style += 'alt'
         }
-        if (this.select === this.index) {
+        if (this.select) {
           style += ' select'
         }
         return style
       }
     },
     methods: {
-      cellEventHandler: function (event, e) {
-        var t = e.target
-        var col = t.attributes['data-col'].value
-        console.log('you just trigger event: ' + event + this.item.FlightNo + ',col: ' + col)
-        this.$emit('cell' + event, {index: this.index, item: this.item, col: col})
+      eventHandler: function (event, e, col) {
+        // console.log('you just trigger event: ' + event + this.item.FlightNo + ',col: ' + col || 'unknown', e)
+        this.$emit(event, [col, e])
+        if (event === 'contextmenu') {
+          e.preventDefault()
+        }
       }
     }
   }
@@ -77,7 +64,9 @@
   }
 
   td:last-child {
-    border-right: none
+    border-right: none;
   }
-
+  tr:last-child > td{
+    border-bottom: none;
+  }
 </style>

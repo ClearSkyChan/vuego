@@ -26,13 +26,16 @@
           <col v-for="col in columns" :width="col.width+'px'">
         </colgroup>
         <tbody>
-        <row v-for="(item,i) in items"
-             v-on:cellclick="onClick"
+        <row v-for="(item,index) in items"
+             v-on:click="rowEventHandler('click',item,index,$event)"
+             v-on:dblclick="rowEventHandler('dblclick',item,index,$event)"
+             v-on:contextmenu="rowEventHandler('contextmenu',item,index,$event)"
              v-bind:columns=columns
              v-bind:item=item
-             v-bind:index=i
-             v-bind:select=select
-             v-bind:key=i>
+             v-bind:index=index
+             v-bind:alt="index%2===0"
+             v-bind:select="select===index"
+             v-bind:key=index>
         </row>
         </tbody>
       </table>
@@ -52,13 +55,12 @@
         select: null,
         sort: {
           field: null,
-          seq: -1
+          seq: 1
         }
       }
     },
     computed: {
       width: function () {
-        // console.log(this.size)
         var result = 0
         this.columns.forEach((col) => {
           result += col.width || COL_DEFAULT_SIZE
@@ -70,9 +72,14 @@
       }
     },
     methods: {
-      onClick: function (e) {
-        this.select = e.index
-        this.$emit('select', e)
+      rowEventHandler: function (event, item, index, e) {
+        this.select = index
+        this.$emit('select', item)
+        this.$emit(event, [item, e[0], e[1]])
+      },
+      onHeaderClick: function (e) {
+        var field = e.target.getAttribute('data-col')
+        this.sortBy(field)
       },
       sortBy: function (field) {
         var that = this
@@ -94,10 +101,6 @@
           this.sort.field = field
           this.sort.seq = -this.sort.seq
         }
-      },
-      onHeaderClick: function (e) {
-        var field = e.target.getAttribute('data-col')
-        this.sortBy(field)
       }
     },
     components: {
@@ -150,6 +153,22 @@
     border: 1px solid #aaaaaa;
     border-top: none;
   }
+  .tb-content::-webkit-scrollbar {
+    width:14px;
+    height:14px;
+  }
+  .tb-content::-webkit-scrollbar-track     {
+    background-color: #E5E5E5;
+    border-left: 2px solid transparent;
+  }
+  .tb-content::-webkit-scrollbar-thumb{
+    background-color: #A6A6A6;
+     border-left: 2px solid transparent;
+  }
+  .tb-content::-webkit-scrollbar-corner {
+    background:#d3d3d4;
+  }
+
 
   .up-arrow{
     display: inline-block;
@@ -183,6 +202,7 @@
   th:last-child {
     border-right: none;
   }
+
   .tb-context-menu{
     /*float:left;*/
     position:absolute;
