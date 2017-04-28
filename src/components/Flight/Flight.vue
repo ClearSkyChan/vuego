@@ -1,7 +1,14 @@
 <template>
   <div class="flight-wrapper">
-    <input type="date"/>
-    <button v-on:click="getFlights">查询</button>
+    <div class="flight-toolbar">
+      <input type="date"/>
+      <button v-on:click="getFlights">查询</button>
+      <select >
+        <option value=”1”>MF</option>
+        <option value=”2”>CZ</option>
+        <option value=”3”>RY</option>
+      </select>
+    </div>
     <flight-grid ref="flightGrid"
                  v-bind:columns=columns
                  v-bind:items=flights
@@ -112,7 +119,8 @@
           name: name,
           handler: function (item) {
             handler.call(this, {data: item})
-          }
+          },
+          items: [0]
         })
       }
     },
@@ -123,8 +131,8 @@
     beforeMount: function () {
       var that = this
       var resize = function () {
-        that.size.height = window.innerHeight - 45
-        that.size.width = window.innerWidth - 35
+        that.size.height = window.innerHeight - 55
+        that.size.width = window.innerWidth - 38
       }
       resize()
       window.addEventListener('resize', resize)
@@ -140,5 +148,11 @@
 <style scoped>
   .flight-wrapper{
     font-size:14px;
+  }
+  .flight-toolbar{
+    background-color: #d3d3d4;
+    margin:4px 0px;
+    padding:4px;
+    border:1px solid #aaaaaa
   }
 </style>

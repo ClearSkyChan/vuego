@@ -2,16 +2,21 @@
   <div class="context-menu"
        v-if="visible"
        v-bind:style="{top:position.top+'px',left:position.left+'px'}">
-    <ul>
-      <li v-for="item in items"
-          v-on:click="onClick(item)">
+    <div>
+      <ul>
+        <li v-for="item in items"
+            v-on:click="onClick(item)">
           {{item.name}}
-      </li>
-    </ul>
+          <div style="float:right"><span v-if="item.items&&item.items.length>0" class="up-arrow"></span></div>
+        </li>
+      </ul>
+    </div>
+    <context-menu></context-menu>
   </div>
 </template>
 <script>
-  export default{
+  var ContextMenu = {
+    name: 'context-menu',
     props: ['items'],
     data: function () {
       return {
@@ -29,6 +34,11 @@
       },
       show: function (left, top, model) {
         this.visible = true
+        var elHeight = this.$el.clientHeight
+        var winHeight = window.innerHeight
+        if (top > winHeight - elHeight) {
+          top = top - elHeight
+        }
         this.position.left = left
         this.position.top = top
         this.model = model
@@ -39,15 +49,30 @@
       window.addEventListener('click', function () {
         that.visible = false
       })
+    },
+    component: {
+      'context-menu': ContextMenu
     }
   }
+  export default ContextMenu
 </script>
-<style>
+<style scoped>
+  .up-arrow{
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 2px;
+    vertical-align: middle;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 4px solid #000;
+  }
   .context-menu{
     position: absolute;
     border:1px solid #aaaaaa;
     background-color: #ffffff;
     cursor:default;
+    box-shadow:3px 3px 3px #cccccc;
   }
   .context-menu ul{
     list-style: none;

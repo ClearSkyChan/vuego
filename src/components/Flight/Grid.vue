@@ -152,6 +152,8 @@
     box-sizing: border-box;
     border: 1px solid #aaaaaa;
     border-top: none;
+    cursor:default;
+    user-select: none;
   }
   .tb-content::-webkit-scrollbar {
     width:14px;
